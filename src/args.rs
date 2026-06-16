@@ -54,8 +54,17 @@ impl Args {
                 .as_ref()
                 .map(|v| v.as_str())
                 .unwrap_or("0.0.0.0"),
-            self.port.unwrap_or(3000)
+            self.port.unwrap_or(8080)
         )
+    }
+
+    /// Gets the set output directory.
+    ///
+    /// Uses "./received" directory by default.
+    pub fn output_dir(&self) -> PathBuf {
+        self.output_dir
+            .clone()
+            .unwrap_or(PathBuf::from("./received"))
     }
 
     /// Prints help
