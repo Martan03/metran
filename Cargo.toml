@@ -1,0 +1,11 @@
+[package]
+name = "metran"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+axum = "0.8.9"
+pareg = "0.12.1"
+termal = "5.0.0"
+thiserror = "2.0.18"
+tokio = { version = "1.52.3", features = ["macros", "rt-multi-thread", "net", "fs", "io-util"] }
