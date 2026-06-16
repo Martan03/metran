@@ -73,7 +73,7 @@ impl Args {
             "Welcome to {'g}metran{'_} by {}{'_}
 {'bl}Version {}{'_}
 
-Media Transfer server written in Rust.
+(iOS) Media Transfer utility written in Rust.
 
 {'g}Usage{'_}:
   {'c}metran{'_}
