@@ -7,6 +7,7 @@
 - [Description](#description)
 - [Installation](#installation)
 - [Usage](#usage)
+    - [Firewall Warning](#firewall-warning)
 - [Links](#links)
 
 ## Description
@@ -19,41 +20,56 @@ support deleting files after transfer.
 ## Installation
 
 You have to compile it yourself, but that shouldn't be a problem. Only thing
-you need is `cargo`:
+you need is `cargo`.
+
+You can install it globally to `~/.cargo/bin`:
+
+```bash
+cargo install --path .
+```
+
+Alternatively, you can just build the release binary locally (binary will be
+in `./target/release`):
 
 ```bash
 cargo build -r
 ```
-
-After its done compiling, you can start it in `./target/release/metran`
 
 ## Usage
 
 Run metran to start the server, which listens for files.
 
 ```bash
-./metran
+metran
 ```
 
 Then on your iPhone, get Shortcuts app and add
 [metran shortcut](https://www.icloud.com/shortcuts/9027245d8ecb4de78071dd6062f5dece).
+
 When adding the shortcut, it asks you for the server address. You need to know
-your PC IP address. You can find it by running:
+your PC's local IP address. You can find it by running:
 
 ```bash
 ip a show
 ```
 
-You should look for devices such as `wlan` or `eno` and then find the `inet`
-field. The IP address should look something like `192.168.1.50`.
+Look for interfaces such as `wlan0` or `eno1` and then find the `inet` field.
+The IP address should look something like `192.168.1.50`.
 
-You can then run the shortcut. It will prompt you to select the photos to send
-and after sending them, it will prompt if you want to delete the sent photos.
+You can then run the shortcut. It will prompt you to select the photos to send,
+and after sending them, it will prompt if you want to delete the original
+photos from your phone.
 
-You can also adjust the configuration, such as the server address and port.
+---
+
+When starting the server, you can also adjust the configuration, such as the
+server address and port.
+
+> Note: To allow connections from other devices on your network, you should
+> use `0.0.0.0` address.
 
 ```bash
-./metran -a 127.0.0.1 -p 1234
+./metran -a 0.0.0.0 -p 1234
 ```
 
 You can see all the usage in the program help.
@@ -61,6 +77,11 @@ You can see all the usage in the program help.
 ```bash
 ./metran -h
 ```
+
+### Firewall Warning
+
+Ensure your firewall allows incoming TCP connections on the port metran is
+running on (default i `8080`).
 
 ## Links
 
