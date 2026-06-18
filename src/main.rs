@@ -4,6 +4,7 @@ use axum::{
     Router,
     extract::{DefaultBodyLimit, Multipart, State},
     http::StatusCode,
+    response::IntoResponse,
     routing::{get, post},
 };
 use pareg::Pareg;
@@ -39,7 +40,7 @@ async fn run() -> Result<(), Error> {
     let state = AppState::from_args(&args);
     let app = Router::new()
         .route("/", get(|| async { "Hello, World!" }))
-        .route("/upload", post(accept_photos))
+        .route("/upload", post(handle_upload))
         .layer(DefaultBodyLimit::disable())
         .with_state(state);
 
@@ -50,44 +51,43 @@ async fn run() -> Result<(), Error> {
     Ok(())
 }
 
-async fn accept_photos(
+async fn handle_upload(
     State(state): State<AppState>,
-    mut multipart: Multipart,
-) -> StatusCode {
-    if let Err(e) = fs::create_dir_all(&state.output_dir).await {
-        eprintcln!("{'r}Error:{'_} {}", e);
-        return StatusCode::INTERNAL_SERVER_ERROR;
-    }
-
-    while let Ok(Some(mut field)) = multipart.next_field().await {
-        // TODO: handle this better
-        let filename = field.file_name().unwrap_or("unknown").to_string();
-
-        let filepath = state.output_dir.join(&filename);
-        match File::create(&filepath).await {
-            Ok(mut file) => loop {
-                match field.chunk().await {
-                    Ok(Some(chunk)) => {
-                        if let Err(e) = file.write_all(&chunk).await {
-                            eprintcln!("{'r}Error:{'_} {}", e);
-                            return StatusCode::INTERNAL_SERVER_ERROR;
-                        }
-                    }
-                    Ok(None) => {
-                        printcln!("{'g}Successfully saved:{'_} {}", filename);
-                        break;
-                    }
-                    Err(e) => {
-                        eprintcln!("{'r}Error:{'_} {}", e);
-                        return StatusCode::INTERNAL_SERVER_ERROR;
-                    }
-                }
-            },
-            Err(e) => {
-                eprintcln!("{'r}Error:{'_} {}", e);
-                return StatusCode::INTERNAL_SERVER_ERROR;
-            }
+    multipart: Multipart,
+) -> impl IntoResponse {
+    match accept_photos(state, multipart).await {
+        Ok(true) => (StatusCode::OK, "SUCCESS").into_response(),
+        Ok(false) => {
+            eprintcln!("{'y}Warning:{'_} Received empty payload. Rejecting.");
+            (StatusCode::BAD_REQUEST, "ERROR_EMPTY").into_response()
+        }
+        Err(e) => {
+            eprintcln!("{'r}Error:{'_} {}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, "ERROR_INTERNAL")
+                .into_response()
         }
     }
-    StatusCode::OK
+}
+
+async fn accept_photos(
+    state: AppState,
+    mut multipart: Multipart,
+) -> Result<bool, Error> {
+    fs::create_dir_all(&state.output_dir).await?;
+
+    let mut any_file = false;
+    while let Some(mut field) = multipart.next_field().await? {
+        // TODO: handle this better
+        let filename = field.file_name().unwrap_or("unknown").to_string();
+        let filepath = state.output_dir.join(&filename);
+
+        let mut file = File::create(&filepath).await?;
+        while let Some(chunk) = field.chunk().await? {
+            file.write_all(&chunk).await?;
+        }
+
+        printcln!("{'g}Successfully saved:{'_} {}", filename);
+        any_file = true;
+    }
+    Ok(any_file)
 }
