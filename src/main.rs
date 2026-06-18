@@ -88,6 +88,22 @@ async fn accept_photos(
 
         printcln!("{'g}Successfully saved:{'_} {}", filename);
         any_file = true;
+
+        if filename.ends_with(".zip") {
+            printcln!("{'b}Info:{'_} ZIP detected, extracting,...");
+
+            let dir = state.output_dir.clone();
+            let path = filepath.clone();
+            tokio::task::spawn_blocking(move || {
+                let file = std::fs::File::open(&path).unwrap();
+                let mut archive = zip::ZipArchive::new(file).unwrap();
+                archive.extract(&dir).unwrap();
+            })
+            .await?;
+
+            fs::remove_file(&filepath).await?;
+            printcln!("{'g}Extracted {}{'_}", filename);
+        }
     }
     Ok(any_file)
 }
