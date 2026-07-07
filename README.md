@@ -64,13 +64,19 @@ You can then run the shortcut. It will prompt you to select the photos to send,
 and after sending them, it will prompt if you want to delete the original
 photos from your phone.
 
+> [!WARNING]
+> It's recommended to check whether all files got transfered before deleting
+> them. The shortcut should exit when it fails transfering fails, but you never
+> know :)
+
 ---
 
 When starting the server, you can also adjust the configuration, such as the
 server address and port.
 
-> Note: To allow connections from other devices on your network, you should
-> use `0.0.0.0` address.
+> [!NOTE]
+> To allow connections from other devices on your network, you should use 
+> `0.0.0.0` address.
 
 ```bash
 ./metran -a 0.0.0.0 -p 1234
@@ -85,7 +91,7 @@ You can see all the usage in the program help.
 ### Firewall Warning
 
 Ensure your firewall allows incoming TCP connections on the port metran is
-running on (default i `8080`).
+running on (default is `8080`).
 
 ## Links
 
